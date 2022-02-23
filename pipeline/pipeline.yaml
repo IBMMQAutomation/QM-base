@@ -14,7 +14,7 @@ spec:
         - name: GIT_SECRET
           value: "git-credentials"
         - name: GIT_SCRIPT
-          value: "git clone https://${GIT_USERNAME}:${GIT_PASSWORD}github.com/ritu-patel/mq-pipeline"
+          value: "git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/IBMMQAutomation/QM-base.git"
         - name: subdirectory
           value: "mq-pipeline"
         - name: IMAGE
