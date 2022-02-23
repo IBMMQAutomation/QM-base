@@ -124,7 +124,7 @@ spec:
         ls
         cd /source
         git config --global user.email "$(params.GIT_USER_EMAIL)"
-        git config --global user.name "$(params.GIT_USERNAME)"
+        git config --global user.name "$GIT_USERNAME"
 
         $(params.GIT_SCRIPT)
 
