@@ -13,7 +13,7 @@ spec:
     name: QUICKSTART
     mqsc:
       - configMap:
-          name: mq-tls-configmap
+          name: mqsc-configmap
           items:
             - tls.mqsc
     storage:
@@ -29,11 +29,3 @@ spec:
   version: 9.2.4.0-r1
   web:
     enabled: true
-  pki:
-    keys:
-      - name: default
-        secret:
-          secretName: pubsub-mq-tls-secret
-          items:
-            - tls.key
-            - tls.crt
