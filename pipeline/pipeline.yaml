@@ -25,7 +25,7 @@ spec:
           value: mq
         - name: QM_YAML
           value: mq-queue-manager.yaml
-        - name: OCP_LOGIN_SECRET
+        - name: OCP_SECRET
           value: "ocp-credentials"
       taskRef:
         kind: Task
