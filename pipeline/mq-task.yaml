@@ -89,12 +89,6 @@ spec:
     - name: QM_YAML
       description: QM yaml file name
       type: string
-    - name: ROUTE_YAML
-      description: Route yaml file name
-      type: string
-    - name: CONFIG_MAP
-      description: Config yaml file name
-      type: string
   results:
     - description: Digest of the image just built.
       name: IMAGE_DIGEST
