@@ -1,0 +1,39 @@
+apiVersion: mq.ibm.com/v1beta1
+kind: QueueManager
+metadata:
+  name: mq-tls
+  namespace: mq
+spec:
+  license:
+    accept: true
+    license: L-RJON-BUVMQX
+    use: NonProduction
+  queueManager:
+    image: image-registry.openshift-image-registry.svc:5000/mq/pipeline-mq:v1
+    name: QUICKSTART
+    mqsc:
+      - configMap:
+          name: mq-tls-configmap
+          items:
+            - tls.mqsc
+    storage:
+      queueManager:
+        type: ephemeral
+  template:
+    pod:
+      containers:
+        - env:
+            - name: MQSNOAUT
+              value: "yes"
+          name: qmgr
+  version: 9.2.4.0-r1
+  web:
+    enabled: true
+  pki:
+    keys:
+      - name: default
+        secret:
+          secretName: pubsub-mq-tls-secret
+          items:
+            - tls.key
+            - tls.crt
