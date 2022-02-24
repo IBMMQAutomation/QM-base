@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: mq-pipeline
+  name: base-image
   namespace: mq
 spec:
   # params:
@@ -15,18 +15,20 @@ spec:
           value: "git-credentials"
         - name: GIT_SCRIPT
           value: "git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/IBMMQAutomation/QM-base.git"
+        - name: SCAN_SECRET
+          value: image-scan-credentials
         - name: subdirectory
           value: "QM-base"
         - name: IMAGE
           value: "image-registry.openshift-image-registry.svc:5000/mq/pipeline-mq:v1"
         - name: TLSVERIFY
           value: "false"
-        - name: PROJECT
-          value: mq
-        - name: QM_YAML
-          value: mq-queue-manager.yaml
-        - name: OCP_SECRET
-          value: "ocp-credentials"
+        # - name: PROJECT
+        #   value: mq
+        # - name: QM_YAML
+        #   value: mq-queue-manager.yaml
+        # - name: OCP_SECRET
+        #   value: "ocp-credentials"
       taskRef:
         kind: Task
-        name: mq-task
+        name: base-image-task

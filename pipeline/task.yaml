@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: mq-task
+  name: base-image-task
   namespace: mq
 spec:
   params:
@@ -11,16 +11,6 @@ spec:
       description: |
         The base image for the task.
       name: BASE_IMAGE
-      type: string
-    - default: ""
-      description: |
-        Git user name for performing git operation.
-      name: GIT_USER_NAME
-      type: string
-    - default: ""
-      description: |
-        Git user email for performing git operation.
-      name: GIT_USER_EMAIL
       type: string
     - description: The git script to run.
       name: GIT_SCRIPT
@@ -54,7 +44,8 @@ spec:
       description: Path to the directory to use as context.
       name: CONTEXT
       type: string
-    - description: >-
+    - default: "false"
+      description: >-
         Verify the TLS on the registry endpoint (for push/pull to a non-TLS
         registry)
       name: TLSVERIFY
@@ -71,30 +62,26 @@ spec:
       description: Extra parameters passed for the push command when pushing images.
       name: PUSH_EXTRA_ARGS
       type: string
+    # for scan
+    - name: SCAN_SECRET
+      type: string
     # for oc cli
-    - description: oopenshift credential secret name
-      name: OCP_SECRET
-      type: string
-    - default: oc help
-      description: The OpenShift CLI arguments to run
-      name: SCRIPT
-      type: string
-    - default: latest
-      description: The OpenShift Version to use
-      name: VERSION
-      type: string
-    - name: PROJECT
-      description: namespace
-      type: string
-    - name: QM_YAML
-      description: QM yaml file name
-      type: string
+    # - description: oopenshift credential secret name
+    #   name: OCP_SECRET
+    #   type: string
+    # - default: latest
+    #   description: The OpenShift Version to use
+    #   name: VERSION
+    #   type: string
+    # - name: PROJECT
+    #   description: namespace
+    #   type: string
   results:
     - description: Digest of the image just built.
       name: IMAGE_DIGEST
   steps:
-    - image: $(params.BASE_IMAGE)
-      name: git
+    - name: git
+      image: $(params.BASE_IMAGE)
       env:
         - name: GIT_PASSWORD
           valueFrom:
@@ -112,9 +99,7 @@ spec:
       script: |
 
         # Setting up the config for the git.
-
         pwd
-
         ls
         cd /source
         git config --global user.email "$(params.GIT_USER_EMAIL)"
@@ -136,8 +121,8 @@ spec:
         - mountPath: /source
           name: source
       workingDir: $(params.source-dir)
-    - image: $(params.BUILDER_IMAGE)
-      name: build
+    - name: build
+      image: $(params.BUILDER_IMAGE)
       resources: {}
       script: |
         pwd
@@ -147,6 +132,31 @@ spec:
           $(params.BUILD_EXTRA_ARGS) --format=$(params.FORMAT) \
           --tls-verify=$(params.TLSVERIFY) --no-cache \
           -f $(params.DOCKERFILE) -t $(params.IMAGE) $(params.CONTEXT)
+      volumeMounts:
+        - mountPath: /var/lib/containers
+          name: varlibcontainers
+        - mountPath: /source
+          name: source
+      workingDir: $(params.source-dir)
+    - name: scan
+      image: docker
+      env:
+        - name: SCAN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.SCAN_SECRET)
+              key: password
+              optional: true
+        - name: SCAN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.SCAN_SECRET)
+              key: username
+              optional: true
+      script: |
+        ls
+        cd $(params.subdirectory)
+        docker scan $(params.IMAGE)
       volumeMounts:
         - mountPath: /var/lib/containers
           name: varlibcontainers
@@ -175,50 +185,56 @@ spec:
       script: >-
         cat $(params.source-dir)/image-digest | tee
         /tekton/results/IMAGE_DIGEST
-    - image: >-
-        image-registry.openshift-image-registry.svc:5000/openshift/cli:$(params.VERSION)
-      name: oc
-      env:
-        - name: OCP_USER
-          valueFrom:
-            secretKeyRef:
-              name: $(params.OCP_SECRET)
-              key: username
-              optional: true
-        - name: OCP_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: $(params.OCP_SECRET)
-              key: password
-        - name: OCP_SERVER
-          valueFrom:
-            secretKeyRef:
-              name: $(params.OCP_SECRET)
-              key: server
-      resources: {}
-      script: |
-        ls
-        cd $(params.subdirectory)
-        #!/usr/bin/env bash
-
-        # [[ "$(workspaces.manifest-dir.bound)" == "true" ]] && \
-        # cd $(workspaces.manifest-dir.path)
-
-        # [[ "$(workspaces.kubeconfig-dir.bound)" == "true" ]] && \
-        # [[ -f $(workspaces.kubeconfig-dir.path)/kubeconfig ]] && \
-        # export KUBECONFIG=$(workspaces.kubeconfig-dir.path)/kubeconfig
-
-        unset KUBECONFIG
-        oc login --token=$OCP_PASSWORD --server=$OCP_SERVER
-        # oc login $OCP_SERVER -u $OCP_USER -p $OCP_PASSWORD
-        oc project $(params.PROJECT)
-        oc apply -f $(params.QM_YAML)
       volumeMounts:
         - mountPath: /var/lib/containers
           name: varlibcontainers
         - mountPath: /source
           name: source
       workingDir: $(params.source-dir)
+    # - image: >-
+    #     image-registry.openshift-image-registry.svc:5000/openshift/cli:$(params.VERSION)
+    #   name: oc
+    #   env:
+    #     - name: OCP_USER
+    #       valueFrom:
+    #         secretKeyRef:
+    #           name: $(params.OCP_SECRET)
+    #           key: username
+    #           optional: true
+    #     - name: OCP_PASSWORD
+    #       valueFrom:
+    #         secretKeyRef:
+    #           name: $(params.OCP_SECRET)
+    #           key: password
+    #     - name: OCP_SERVER
+    #       valueFrom:
+    #         secretKeyRef:
+    #           name: $(params.OCP_SECRET)
+    #           key: server
+    #   resources: {}
+    #   script: |
+    #     ls
+    #     cd $(params.subdirectory)
+    #     #!/usr/bin/env bash
+
+    #     # [[ "$(workspaces.manifest-dir.bound)" == "true" ]] && \
+    #     # cd $(workspaces.manifest-dir.path)
+
+    #     # [[ "$(workspaces.kubeconfig-dir.bound)" == "true" ]] && \
+    #     # [[ -f $(workspaces.kubeconfig-dir.path)/kubeconfig ]] && \
+    #     # export KUBECONFIG=$(workspaces.kubeconfig-dir.path)/kubeconfig
+
+    #     unset KUBECONFIG
+    #     oc login --token=$OCP_PASSWORD --server=$OCP_SERVER
+    #     # oc login $OCP_SERVER -u $OCP_USER -p $OCP_PASSWORD
+    #     oc project $(params.PROJECT)
+    #     oc apply -f $(params.QM_YAML)
+    #   volumeMounts:
+    #     - mountPath: /var/lib/containers
+    #       name: varlibcontainers
+    #     - mountPath: /source
+    #       name: source
+    #   workingDir: $(params.source-dir)
   volumes:
     - emptyDir: {}
       name: varlibcontainers
