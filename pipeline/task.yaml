@@ -95,6 +95,12 @@ spec:
               name: $(params.GIT_SECRET)
               key: username
               optional: true
+        - name: GIT_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.GIT_SECRET)
+              key: email
+              optional: true
       resources: {}
       script: |
 
@@ -102,7 +108,7 @@ spec:
         pwd
         ls
         cd /source
-        git config --global user.email "$(params.GIT_USER_EMAIL)"
+        git config --global user.email "$GIT_EMAIL"
         git config --global user.name "$GIT_USERNAME"
 
         $(params.GIT_SCRIPT)
@@ -140,6 +146,7 @@ spec:
       workingDir: $(params.source-dir)
     - name: scan
       image: docker
+      resources: {}
       env:
         - name: SCAN_PASSWORD
           valueFrom:
@@ -240,3 +247,4 @@ spec:
       name: varlibcontainers
     - emptyDir: {}
       name: source
+# oc create secret generic image-scan-credentials --from-literal=username=user;password=pass;server=docker.io
