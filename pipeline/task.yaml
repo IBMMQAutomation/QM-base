@@ -66,21 +66,21 @@ spec:
     - name: SCAN_SECRET
       type: string
     # for oc cli
-    # - description: oopenshift credential secret name
-    #   name: OCP_SECRET
-    #   type: string
-    # - default: latest
-    #   description: The OpenShift Version to use
-    #   name: VERSION
-    #   type: string
-    # - name: PROJECT
-    #   description: namespace
-    #   type: string
+    - description: oopenshift credential secret name
+      name: OCP_SECRET
+      type: string
+    - default: latest
+      description: The OpenShift Version to use
+      name: VERSION
+      type: string
+    - name: PROJECT
+      description: namespace
+      type: string
   results:
     - description: Digest of the image just built.
       name: IMAGE_DIGEST
   steps:
-    - name: git
+    - name: git-cli
       image: $(params.BASE_IMAGE)
       env:
         - name: GIT_PASSWORD
@@ -124,6 +124,8 @@ spec:
         ls
         pwd
       volumeMounts:
+        - mountPath: /var/lib/containers
+          name: varlibcontainers
         - mountPath: /source
           name: source
       workingDir: $(params.source-dir)
@@ -132,7 +134,7 @@ spec:
       resources: {}
       script: |
         pwd
-        ls 
+        ls
         cd $(params.subdirectory)
         buildah --storage-driver=$(params.STORAGE_DRIVER) bud \
           $(params.BUILD_EXTRA_ARGS) --format=$(params.FORMAT) \
@@ -144,26 +146,26 @@ spec:
         - mountPath: /source
           name: source
       workingDir: $(params.source-dir)
-    - name: scan
-      image: docker
-      resources: {}
-      env:
-        - name: SCAN_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: $(params.SCAN_SECRET)
-              key: password
-              optional: true
-        - name: SCAN_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: $(params.SCAN_SECRET)
-              key: username
-              optional: true
-      script: |
-        ls
-        cd $(params.subdirectory)
-        docker scan $(params.IMAGE)
+    # - name: scan
+    #   image: snyk/snyk-cli:docker
+    #   resources: {}
+    #   env:
+    #     - name: SCAN_PASSWORD
+    #       valueFrom:
+    #         secretKeyRef:
+    #           name: $(params.SCAN_SECRET)
+    #           key: password
+    #           optional: true
+    #     - name: SCAN_USERNAME
+    #       valueFrom:
+    #         secretKeyRef:
+    #           name: $(params.SCAN_SECRET)
+    #           key: username
+    #           optional: true
+    #   script: |
+    #     ls
+    #     cd $(params.subdirectory)
+    #     docker scan $(params.IMAGE)
       volumeMounts:
         - mountPath: /var/lib/containers
           name: varlibcontainers
@@ -198,53 +200,56 @@ spec:
         - mountPath: /source
           name: source
       workingDir: $(params.source-dir)
-    # - image: >-
-    #     image-registry.openshift-image-registry.svc:5000/openshift/cli:$(params.VERSION)
-    #   name: oc
-    #   env:
-    #     - name: OCP_USER
-    #       valueFrom:
-    #         secretKeyRef:
-    #           name: $(params.OCP_SECRET)
-    #           key: username
-    #           optional: true
-    #     - name: OCP_PASSWORD
-    #       valueFrom:
-    #         secretKeyRef:
-    #           name: $(params.OCP_SECRET)
-    #           key: password
-    #     - name: OCP_SERVER
-    #       valueFrom:
-    #         secretKeyRef:
-    #           name: $(params.OCP_SECRET)
-    #           key: server
-    #   resources: {}
-    #   script: |
-    #     ls
-    #     cd $(params.subdirectory)
-    #     #!/usr/bin/env bash
 
-    #     # [[ "$(workspaces.manifest-dir.bound)" == "true" ]] && \
-    #     # cd $(workspaces.manifest-dir.path)
-
-    #     # [[ "$(workspaces.kubeconfig-dir.bound)" == "true" ]] && \
-    #     # [[ -f $(workspaces.kubeconfig-dir.path)/kubeconfig ]] && \
-    #     # export KUBECONFIG=$(workspaces.kubeconfig-dir.path)/kubeconfig
-
-    #     unset KUBECONFIG
-    #     oc login --token=$OCP_PASSWORD --server=$OCP_SERVER
-    #     # oc login $OCP_SERVER -u $OCP_USER -p $OCP_PASSWORD
-    #     oc project $(params.PROJECT)
-    #     oc apply -f $(params.QM_YAML)
-    #   volumeMounts:
-    #     - mountPath: /var/lib/containers
-    #       name: varlibcontainers
-    #     - mountPath: /source
-    #       name: source
-    #   workingDir: $(params.source-dir)
   volumes:
     - emptyDir: {}
       name: varlibcontainers
     - emptyDir: {}
       name: source
 # oc create secret generic image-scan-credentials --from-literal=username=user;password=pass;server=docker.io
+
+# ocp step
+# - image: >-
+#     image-registry.openshift-image-registry.svc:5000/openshift/cli:$(params.VERSION)
+#   name: oc
+#   env:
+#     - name: OCP_USER
+#       valueFrom:
+#         secretKeyRef:
+#           name: $(params.OCP_SECRET)
+#           key: username
+#           optional: true
+#     - name: OCP_PASSWORD
+#       valueFrom:
+#         secretKeyRef:
+#           name: $(params.OCP_SECRET)
+#           key: password
+#     - name: OCP_SERVER
+#       valueFrom:
+#         secretKeyRef:
+#           name: $(params.OCP_SECRET)
+#           key: server
+#   resources: {}
+#   script: |
+#     ls
+#     cd $(params.subdirectory)
+#     #!/usr/bin/env bash
+
+#     # [[ "$(workspaces.manifest-dir.bound)" == "true" ]] && \
+#     # cd $(workspaces.manifest-dir.path)
+
+#     # [[ "$(workspaces.kubeconfig-dir.bound)" == "true" ]] && \
+#     # [[ -f $(workspaces.kubeconfig-dir.path)/kubeconfig ]] && \
+#     # export KUBECONFIG=$(workspaces.kubeconfig-dir.path)/kubeconfig
+
+#     unset KUBECONFIG
+#     oc login --token=$OCP_PASSWORD --server=$OCP_SERVER
+#     # oc login $OCP_SERVER -u $OCP_USER -p $OCP_PASSWORD
+#     oc project $(params.PROJECT)
+#     oc apply -f $(params.QM_YAML)
+#   volumeMounts:
+#     - mountPath: /var/lib/containers
+#       name: varlibcontainers
+#     - mountPath: /source
+#       name: source
+#   workingDir: $(params.source-dir)
