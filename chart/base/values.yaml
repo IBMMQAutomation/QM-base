@@ -86,9 +86,6 @@ configmap:
   path: config
   pathWithSecurity: security
 
-cert:
-  secretName: mq-server-cert-smoke
-
 terminationGracePeriodSeconds: 30
 
 tracing:
