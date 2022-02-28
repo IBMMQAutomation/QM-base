@@ -123,7 +123,7 @@ spec:
                 exit 1
             else
               echo "Job succeeded"
-              exit 1
+              break
             fi
             # echo "Job succeeded"
             oc logs job/cphtestp -n ${SRC_ENV}
