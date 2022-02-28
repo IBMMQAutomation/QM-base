@@ -19,7 +19,7 @@ license:
 
 image:
   repository: image-registry.openshift-image-registry.svc:5000/mq/pipeline-mq
-  tag: v2
+  tag: v1
   pullPolicy: Always
 
 queuemanager:
