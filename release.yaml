@@ -63,7 +63,7 @@ spec:
     availability:
       type: SingleInstance
     
-    image: "image-registry.openshift-image-registry.svc:5000/mq-ns/pipeline-mq:v2"
+    image: "image-registry.openshift-image-registry.svc:5000/mq/pipeline-mq:v1"
     imagePullPolicy: Always
     mqsc:
     - configMap:
