@@ -39,40 +39,17 @@ spec:
 
     - name: smoke-test-dev
       params:
-        - name: git-url
-          value: "https://github.com/IBMMQAutomation/base-image.git"
-        - name: git-clone
-          value: git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/IBMMQAutomation/base-image.git
-        - name: git-revision
-          value: master
         - name: source-dir
           value: /source
-        - name: image-server
-          value: ""
-        - name: image-namespace
-          value: "mq"
-        - name: image-repository
-          value: ""
-        - name: image-tag
-          value: "v2"
         - name: app-namespace
           value: "mq"
         - name: app-name
           value: "qm1-smoke" # must be same as QM name https://github.com/IBMMQAutomation/base-image/blob/main/chart/base/values.yaml
-        - name: deploy-ingress-type
-          value: "route"
         - name: tools-image
           value: "quay.io/ibmgaragecloud/ibmcloud-dev:v2.0.4"
-        - name: security
-          value: "false"
-        - name: ha
-          value: "false"
         - name: subdirectory
           value: base-image
-        - name: GIT_SECRET
-          value: git-credentials
-        - name: IMAGE
-          value: image-registry.openshift-image-registry.svc:5000/mq/pipeline-mq
+
       taskRef:
         kind: Task
         name: smoke-test-dev
@@ -81,24 +58,16 @@ spec:
 
     - name: cphtestp-performance-test-dev
       params:
-        - name: git-url
-          value: "https://github.com/IBMMQAutomation/base-image.git"
-        - name: git-revision
-          value: master
         - name: source-dir
           value: /source
         - name: subdirectory
           value: base-image
-        - name: src-environment
-          value: "mq"
-        - name: test-plan
-          value: ""
-        - name: qm-security
-          value: "false"
         - name: app-namespace
           value: "mq"
         - name: app-name
           value: "qm1-smoke"
+        - name: qm-security
+          value: "false"
       taskRef:
         kind: Task
         name: cphtestp-performance-test-dev

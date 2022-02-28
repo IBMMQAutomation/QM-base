@@ -2,19 +2,14 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: cphtestp-performance-test-dev
+  namespace: mq-ns
 spec:
   params:
     - name: subdirectory
-    - name: git-url
-    - name: git-revision
-      default: master
     - name: source-dir
     - name: app-namespace
     - name: app-name
-    - name: src-environment
     - name: subdirectory
-    - name: test-plan
-      default: ""
     - name: qm-security
       default: "false"
   volumes:
@@ -33,12 +28,26 @@ spec:
         #!/usr/bin/env bash
 
         set -ex
-        SRC_ENV=$(echo $(params.src-environment) | cut -d "-" -f2)
+        SRC_ENV=$(params.app-namespace)
+
+
+        echo ${SRC_ENV}
+
+
         QMGR_NAME=$(params.app-name)
+
+
         # QMGR_NAME=$(oc get qmgr -n ${SRC_ENV} | awk 'NR>1 { printf sep $1; sep=" "}')
+
+
         MQ_QM_NAME=$(oc get qmgr ${QMGR_NAME} -o jsonpath='{.spec.queueManager.name}' -n ${SRC_ENV})
+
+
         QMGR_HOST_NAME=$(oc get svc ${QMGR_NAME}-ibm-mq -o jsonpath='{.metadata.name}' -n ${SRC_ENV})
+
+
         QMGR_HTTP_PORT=$(oc get svc ${QMGR_NAME}-ibm-mq -o jsonpath='{.spec.ports[1].port}' -n ${SRC_ENV})
+
 
         oc delete job cphtestp -n ${SRC_ENV} || true
 

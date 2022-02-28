@@ -21,7 +21,7 @@ spec:
     - description: Digest of the image just built.
       name: IMAGE_DIGEST
   steps:
-    - name: buildash
+    - name: buildah
       image: $(params.BASE_IMAGE)
       resources: {}
       script: |
