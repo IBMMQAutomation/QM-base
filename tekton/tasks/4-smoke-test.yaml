@@ -361,8 +361,6 @@ spec:
       script: |
         #!/usr/bin/env bash
 
-        cat release.yaml
-
         set -ex
 
         APP_NAMESPACE="$(params.app-namespace)"

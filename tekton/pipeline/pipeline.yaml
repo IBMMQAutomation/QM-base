@@ -54,7 +54,7 @@ spec:
         - name: image-repository
           value: ""
         - name: image-tag
-          value: "v1"
+          value: "v2"
         - name: app-namespace
           value: "mq"
         - name: app-name
