@@ -2,7 +2,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: smoke-test-dev
-  namespace: mq-ns
+  namespace: mq
 spec:
   params:
     - name: source-dir
