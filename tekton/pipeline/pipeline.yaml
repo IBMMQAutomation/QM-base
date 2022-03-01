@@ -65,7 +65,7 @@ spec:
         - name: app-namespace
           value: "mq"
         - name: app-name
-          value: "qm1-smoke"
+          value: "qm1-smoke" # same as qm name on https://github.com/IBMMQAutomation/base-image/blob/main/release.yaml
         - name: qm-security
           value: "false"
       taskRef:
