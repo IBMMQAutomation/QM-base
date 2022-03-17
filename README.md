@@ -30,3 +30,8 @@ oc apply -f tekton/tasks/
 ```
 
 Optionally: you can also add webhook for your repo
+
+#### Next Steps
+
+- Dynamic MQSC: https://github.com/IBMMQAutomation/dynamic-mqsc
+- ArgoCD Setup: https://github.com/IBMMQAutomation/mq-pipeline
