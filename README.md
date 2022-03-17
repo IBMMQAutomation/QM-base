@@ -1,6 +1,6 @@
 # Build a custom MQ image
 
-<img src="/readme-images/custom-image.png" width="45%" height="10%">
+<img src="/readme-images/custom-image.png" width="55%" height="20%">
 
 **Description**: Purpose of this repo is to build a custom MQ image every new release or every fix pack release. This repo contains dockerfile and security exit files. The base image in Dockerfile is using MQ version `9.2.4.0-r1`. Make sure you update the version every new release and run the pipeline to build and push the image to Nexus registry. Pipeline also runs smoke test and performance test.
 
