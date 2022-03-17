@@ -11,7 +11,6 @@ spec:
     - name: subdirectory
     - name: source-dir
     - name: BUILDER_IMAGE
-      default: registry.redhat.io/rhel8/buildah@sha256:99cae35f40c7ec050fed3765b2b27e0b8bbea2aa2da7c16408e2ca13c60ff8ee
     - default: vfs
       name: STORAGE_DRIVER
     - default: Dockerfile
